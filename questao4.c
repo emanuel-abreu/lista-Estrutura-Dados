@@ -1,86 +1,80 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h> 
+typedef struct no {
+    float valor;
+    struct no* prox;
+} NO;
 
-#define TAMANHO_MAX_PILHA 100
+typedef struct pilha {
+    NO* topo;
+    int tam;
+} PILHA;
 
-typedef struct {
-    int topo;
-    int itens[TAMANHO_MAX_PILHA];
-} Pilha;
-
-void empilhar(Pilha* p, int valor) {
-    if (p->topo == TAMANHO_MAX_PILHA - 1) {
-        printf("Estouro da pilha!\n");
-        exit(EXIT_FAILURE);
-    } else {
-        p->topo++;
-        p->itens[p->topo] = valor;
-    }
+void push(float valor, PILHA* p) {
+    NO* novo = (NO*) malloc(sizeof(NO));
+    novo->valor = valor;
+    novo->prox = p->topo;
+    p->topo = novo;
+    p->tam++;
 }
 
-int desempilhar(Pilha* p) {
-    if (p->topo == -1) {
-        printf("Pilha vazia!\n");
-        exit(EXIT_FAILURE);
-    } else {
-        int valor = p->itens[p->topo];
-        p->topo--;
+float pop(PILHA* p) {
+    if (p->tam > 0) {
+        NO* aux = p->topo;
+        float valor = aux->valor;
+        p->topo = aux->prox;
+        free(aux);
+        p->tam--;
         return valor;
+    } else {
+        printf("Pilha vazia!\n");
+        return -1;
     }
 }
 
 int main() {
-    Pilha pilha;
-    pilha.topo = -1;
-    
-    char input[100];
-    printf("Digite a expressão: ");
-    fgets(input, 100, stdin);
-    
-    int i = 0;
-    while (input[i] != '\0') {
-        if (input[i] >= '0' && input[i] <= '9') {
-            int numero = 0;
-            while (input[i] >= '0' && input[i] <= '9') {
-                numero = numero * 10 + (input[i] - '0');
+    PILHA* p = (PILHA*) malloc(sizeof(PILHA));
+    p->topo = NULL;
+    p->tam = 0;
+
+    char expressao[100];
+    float operando;
+
+    printf("Digite uma expressao pos-fixada (use espacos entre os operandos e operadores):\n");
+    fgets(expressao, 100, stdin);
+
+    for (int i = 0; expressao[i] != '\0'; i++) {
+        if (isdigit(expressao[i])) { 
+            operando = atof(&expressao[i]); 
+            push(operando, p);
+            while (isdigit(expressao[i + 1]) || expressao[i + 1] == '.') { 
                 i++;
             }
-            empilhar(&pilha, numero);
-        } else if (input[i] == '+' || input[i] == '-' || input[i] == '*' || input[i] == '/') {
-            int operando2 = desempilhar(&pilha);
-            int operando1 = desempilhar(&pilha);
-            int resultado;
-            switch (input[i]) {
+        } else if (expressao[i] == '+' || expressao[i] == '-' || expressao[i] == '*' || expressao[i] == '/') { 
+            float op1 = pop(p);
+            float op2 = pop(p);
+            float resultado;
+            switch (expressao[i]) {
                 case '+':
-                    resultado = operando1 + operando2;
+                    resultado = op2 + op1;
                     break;
                 case '-':
-                    resultado = operando1 - operando2;
+                    resultado = op2 - op1;
                     break;
                 case '*':
-                    resultado = operando1 * operando2;
+                    resultado = op2 * op1;
                     break;
                 case '/':
-                    resultado = operando1 / operando2;
+                    resultado = op2 / op1;
                     break;
                 default:
-                    printf("Operador inválido!\n");
-                    return 1;
+                    printf("Operador invalido!\n");
+                    return -1;
             }
-            empilhar(&pilha, resultado);
-            i++;
-        } else {
-            i++;
+            push(resultado, p);
         }
     }
-    
-    int resultado = desempilhar(&pilha);
-    if (pilha.topo == -1) {
-        printf("Resultado: %d\n", resultado);
-    } else {
-        printf("Expressão inválida!\n");
-        return 1;
-    }
-    
+    printf("Resultado: %.2f\n", pop(p));
     return 0;
 }
