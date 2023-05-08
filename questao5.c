@@ -1,83 +1,63 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 typedef struct no {
-    char dado;
-    struct no* proximo;
-} No;
+    char valor;
+    struct no *prox;
+} NO;
 
-void inserir(No** cabeca, char dado) {
-    No* novoNo = (No*) malloc(sizeof(No));
-    novoNo->dado = dado;
-    novoNo->proximo = *cabeca;
-    *cabeca = novoNo;
+typedef struct pilha {
+    NO *topo;
+    int tam;
+} PILHA;
+
+void empilhar(char c, PILHA *p) {
+    NO *novo = (NO *) malloc(sizeof(NO));
+    novo->valor = c;
+    novo->prox = p->topo;
+    p->topo = novo;
+    p->tam++;
 }
 
-void exibir(No* cabeca) {
-    No* atual = cabeca;
-    while (atual != NULL) {
-        printf("%c", atual->dado);
-        atual = atual->proximo;
+char desempilhar(PILHA *p) {
+    if (p->tam == 0) {
+        printf("Pilha vazia!\n");
+        return '\0';
     }
+    NO *aux = p->topo;
+    char valor = aux->valor;
+    p->topo = aux->prox;
+    free(aux);
+    p->tam--;
+    return valor;
 }
 
-int ehVogal(char c) {
-    char vogais[] = "AEIOUaeiou";
-    int i;
-    for (i = 0; vogais[i] != '\0'; i++) {
-        if (c == vogais[i]) {
-            return 1;
-        }
-    }
-    return 0;
-}
-
-void criptografar(No* cabeca) {
-    No* atual = cabeca;
-    No* inicio = cabeca;
-    while (atual != NULL) {
-        if ((atual->dado >= 'A' && atual->dado <= 'Z') || (atual->dado >= 'a' && atual->dado <= 'z')) {
-            if (!ehVogal(atual->dado)) {
-                No* fim = atual;
-                while (fim->proximo != NULL && ((fim->proximo->dado >= 'A' && fim->proximo->dado <= 'Z') || (fim->proximo->dado >= 'a' && fim->proximo->dado <= 'z')) && !ehVogal(fim->proximo->dado)) {
-                    fim = fim->proximo;
-                }
-                No* temp = fim->proximo;
-                fim->proximo = NULL;
-                while (atual != NULL) {
-                    No* proximo = atual->proximo;
-                    atual->proximo = temp;
-                    temp = atual;
-                    atual = proximo;
-                }
-                if (inicio == cabeca) {
-                    cabeca = temp;
-                } else {
-                    inicio->proximo = temp;
-                }
-                inicio = fim;
-                atual = temp;
-            } else {
-                inicio = atual;
-                atual = atual->proximo;
-            }
-        } else {
-            inicio = atual;
-            atual = atual->proximo;
-        }
+void exibir_pilha_inversa(PILHA *p) {
+    while (p->tam > 0) {
+        printf("%c", desempilhar(p));
     }
 }
 
 int main() {
-    No* cabeca = NULL;
     char c;
-    printf("Digite uma sequencia de caracteres: ");
-    while ((c = getchar()) != '\n') {
-        inserir(&cabeca, c);
+    PILHA *p = (PILHA *) malloc(sizeof(PILHA));
+    p->topo = NULL;
+    p->tam = 0;
+
+    while (scanf("%c", &c) != EOF) {
+        if (isalpha(c) && !strchr("aeiouAEIOU", c)) {
+            empilhar(c, p);
+        } else {
+            printf("%c", c);
+            exibir_pilha_inversa(p);
+        }
     }
-    criptografar(cabeca);
-    printf("Sequencia criptografada: ");
-    exibir(cabeca);
-    printf("\n");
+
+    while (p->tam > 0) {
+        printf("%c", desempilhar(p));
+    }
+
+    free(p);
     return 0;
 }
