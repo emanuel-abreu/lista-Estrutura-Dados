@@ -74,7 +74,11 @@ void voltar_caixas(Pilha* pilha_destino, Pilha* pilha_auxiliar_1, Pilha* pilha_a
             exit(1);
         }
         if (!pilha_vazia(pilha_auxiliar_2) && peso > pilha_auxiliar_2->topo->peso) {
-            mover_caixas(pilha_auxiliar_2, pilha_auxiliar_1
+            mover_caixas(pilha_auxiliar_2, pilha_destino, pilha_auxiliar_1);
+        }
+        empilhar(pilha_destino, peso);
+    }
+}
 int main() {
     Pilha* pilhaA = criar_pilha();
     Pilha* pilhaB = criar_pilha();
