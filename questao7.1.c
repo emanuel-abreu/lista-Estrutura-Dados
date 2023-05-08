@@ -1,70 +1,134 @@
-#include <stdio.h>
+#include<stdio.h>
+#include<stdlib.h>
 
-#define MAX_STACK_SIZE 100
-#define MAX_QUEUE_SIZE 100
+typedef struct no{
+    //valores
+    int valor;
+    //mecanismo de ligacao de nos
+    struct no * prox;
+}NO;
 
-typedef struct {
-    int top;
-    int data[MAX_STACK_SIZE];
-} Stack;
 
-typedef struct {
-    Stack s1;
-    Stack s2;
-} FilaDePilhas;
+typedef struct pilha{
+    //valores
+    NO * topo; //topo
+    int tam;
+    //mecanismo de ligacao pilha
+    struct pilha *prox;
+}PILHA;
 
-void push(Stack *pilha, int val) {
-    if (pilha->top == MAX_STACK_SIZE - 1) {
-        printf("Estouro de pilha\n");
-        return;
+typedef struct fila{
+    PILHA * inicio;
+    PILHA * fim;
+    int tam;
+}FILA;
+
+void add_fila(PILHA *p, FILA *f){
+    
+    if(f->inicio == NULL){ //vazia
+        
+        f->inicio = p;
+        f->fim = p;
+        f->tam++;
+        p->prox = NULL;
+        
+    }else{//fila ja tem elementos
+        f->fim->prox = p;
+        f->fim = p;
+        p->prox = NULL;
+        f->tam++;
+        
     }
-    pilha->top++;
-    pilha->data[pilha->top] = val;
 }
 
-int pop(Stack *pilha) {
-    if (pilha->top == -1) {
-        printf("Pilha vazia\n");
-        return -1;
-    }
-    int val = pilha->data[pilha->top];
-    pilha->top--;
-    return val;
-}
 
-int filaDePilhasVazia(FilaDePilhas *fila) {
-    return fila->s1.top == -1 && fila->s2.top == -1;
-}
+void add_pilha(int valor, PILHA *p){
+    
+        NO * novo = malloc(sizeof(NO));
+        novo->valor = valor;
+        novo->prox = NULL;
 
-void enqueue(FilaDePilhas *fila, int val) {
-    push(&fila->s1, val);
-}
-
-int dequeue(FilaDePilhas *fila) {
-    if (filaDePilhasVazia(fila)) {
-        printf("Fila vazia\n");
-        return -1;
-    }
-    if (fila->s2.top == -1) {
-        while (fila->s1.top != -1) {
-            int val = pop(&fila->s1);
-            push(&fila->s2, val);
+        if(p->topo == NULL){//pilha esta vazia
+            p->topo = novo;
+         
+        }else {  //topo
+                novo->prox = p->topo;
+                p->topo = novo;
         }
-    }
-    return pop(&fila->s2);
+        p->tam++;
+    
 }
 
-int main() {
-    FilaDePilhas minhaFila = { .s1.top = -1, .s2.top = -1 };
+void imprimir_pilha(PILHA *p){
+    
+     NO * aux = p->topo;
+                   
+    for(int i = 0; i<p->tam; i++){
+        printf("valor: %d\n", aux->valor);
+        aux = aux->prox;
+    }
+    
+}
 
-    enqueue(&minhaFila, 10);
-    enqueue(&minhaFila, 20);
-    enqueue(&minhaFila, 30);
+void imprimir_fila(FILA *f){
+    
+     PILHA * aux = f->inicio;
+                   
+    for(int i = 0; i<f->tam; i++){
+        printf("Pilha %d:\n", i);
+        imprimir_pilha(aux);
+        aux = aux->prox;
+    }
+    
+}
 
-    printf("%d\n", dequeue(&minhaFila)); // 10
-    printf("%d\n", dequeue(&minhaFila)); // 20
-    printf("%d\n", dequeue(&minhaFila)); // 30
-    printf("%d\n", dequeue(&minhaFila)); // Fila vazia
 
+int remover_pilha(PILHA *p){
+   
+        if(p->tam > 0){ //topo
+            
+            NO *lixo = p->topo;
+            int valor = p->topo->valor;
+            p->topo = p->topo->prox;
+            free(lixo);
+            p->tam--;
+            return valor;
+        }else{
+            printf("Pilha vazia! \n :(");
+            return -1;
+        }
+    
+    return 0;
+}
+
+PILHA * inicia(){
+   PILHA * aux = malloc(sizeof(PILHA));
+   aux->topo = NULL;
+   aux->tam = 0;
+   return aux;
+}
+
+int main(){
+    
+    PILHA *p1 = inicia();
+    add_pilha(18, p1);
+    add_pilha(19, p1);
+    
+    PILHA *p2 = inicia();
+    
+    add_pilha(17, p2);
+    add_pilha(28, p2);
+    add_pilha(39, p2);
+    add_pilha(45, p2);
+    
+    
+    FILA *f1 = malloc(sizeof(FILA));
+    f1->inicio = NULL;
+    f1->fim = NULL;
+    f1->tam = 0;
+    
+    add_fila(p1, f1);
+    add_fila(p2, f1);
+    imprimir_fila(f1);
     return 0;
 }
