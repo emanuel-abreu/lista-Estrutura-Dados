@@ -56,24 +56,54 @@ void mover_caixas(Pilha* pilha_origem, Pilha* pilha_auxiliar_1, Pilha* pilha_aux
             printf("Erro ao desempilhar\n");
             exit(1);
         }
-        if (peso > pilha_auxiliar_1->topo->peso) {
-            empilhar(pilha_auxiliar_2, peso);
+        if (!pilha_vazia(pilha_auxiliar_1) && peso > pilha_auxiliar_1->topo->peso) {
             mover_caixas(pilha_auxiliar_1, pilha_origem, pilha_auxiliar_2);
-        } else {
-            empilhar(pilha_auxiliar_1, peso);
         }
+        if (!pilha_vazia(pilha_auxiliar_2) && peso > pilha_auxiliar_2->topo->peso) {
+            mover_caixas(pilha_auxiliar_2, pilha_origem, pilha_auxiliar_1);
+        }
+        empilhar(pilha_auxiliar_1, peso);
     }
 }
 
 void voltar_caixas(Pilha* pilha_destino, Pilha* pilha_auxiliar_1, Pilha* pilha_auxiliar_2) {
-
     while (!pilha_vazia(pilha_auxiliar_1)) {
-    
         int peso = desempilhar(pilha_auxiliar_1);
         if (peso == -1) {
             printf("Erro ao desempilhar\n");
             exit(1);
         }
-        empilhar(pilha_destino, peso);
-    }
+        if (!pilha_vazia(pilha_auxiliar_2) && peso > pilha_auxiliar_2->topo->peso) {
+            mover_caixas(pilha_auxiliar_2, pilha_auxiliar_1
+int main() {
+    Pilha* pilhaA = criar_pilha();
+    Pilha* pilhaB = criar_pilha();
+    Pilha* pilhaC = criar_pilha();
+
+    empilhar(pilhaA, 5);
+    empilhar(pilhaA, 3);
+    empilhar(pilhaA, 7);
+
+    printf("Pilha A: ");
+    imprimir_pilha(pilhaA);
+
+    mover_caixas(pilhaA, pilhaB, pilhaC);
+
+    printf("Pilha A: ");
+    imprimir_pilha(pilhaA);
+    printf("Pilha B: ");
+    imprimir_pilha(pilhaB);
+    printf("Pilha C: ");
+    imprimir_pilha(pilhaC);
+
+    voltar_caixas(pilhaA, pilhaB, pilhaC);
+
+    printf("Pilha A: ");
+    imprimir_pilha(pilhaA);
+    printf("Pilha B: ");
+    imprimir_pilha(pilhaB);
+    printf("Pilha C: ");
+    imprimir_pilha(pilhaC);
+
+    return 0;
 }
