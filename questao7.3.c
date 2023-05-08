@@ -1,73 +1,113 @@
-#define TAMANHO_MAX_FILA 100
+#include <stdio.h>
+#include <stdlib.h>
 
-typedef struct {
-    int inicio, fim;
-    int dados[TAMANHO_MAX_FILA];
-} Fila;
+typedef struct no {
+  
+    int valor;
+  
+    struct no * prox;
+} NO;
 
-typedef struct {
-    Fila fila1;
-    Fila fila2;
-} FilaDeFilas;
+typedef struct pilha {
+    
+    NO * topo; 
+    int tam;
+    
+    struct pilha *prox;
+} PILHA;
 
-int fila_vazia(Fila *f) {
-    return f->inicio == -1 && f->fim == -1;
-}
+typedef struct fila {
+    PILHA * inicio;
+    PILHA * fim;
+    int tam;
+} FILA;
 
-int fila_cheia(Fila *f) {
-    return (f->fim + 1) % TAMANHO_MAX_FILA == f->inicio;
-}
-
-void fila_enfileirar(Fila *f, int val) {
-    if (fila_cheia(f)) {
-        printf("Estouro da fila\n");
-        return;
+void add_fila(PILHA *p, FILA *f){
+    if(f->inicio == NULL){ 
+        f->inicio = p;
+        f->fim = p;
+        f->tam++;
+        p->prox = NULL;
+    } else { 
+        f->fim->prox = p;
+        f->fim = p;
+        p->prox = NULL;
+        f->tam++;
     }
-    if (fila_vazia(f)) {
-        f->inicio = f->fim = 0;
+}
+
+void add_pilha(int valor, PILHA *p){
+    NO * novo = malloc(sizeof(NO));
+    novo->valor = valor;
+    novo->prox = NULL;
+    if(p->topo == NULL){ 
+        p->topo = novo;
+    } else {  
+        novo->prox = p->topo;
+        p->topo = novo;
+    }
+    p->tam++;
+}
+
+void imprimir_pilha(PILHA *p){
+    NO * aux = p->topo;
+    for(int i = 0; i < p->tam; i++){
+        printf("valor: %d\n", aux->valor);
+        aux = aux->prox;
+    }
+}
+
+void imprimir_fila(FILA *f){
+    PILHA * aux = f->inicio;
+    for(int i = 0; i < f->tam; i++){
+        printf("Pilha %d:\n", i);
+        imprimir_pilha(aux);
+        aux = aux->prox;
+    }
+}
+
+int remover_pilha(PILHA *p){
+    if(p->tam > 0){
+        NO *lixo = p->topo;
+        int valor = p->topo->valor;
+        p->topo = p->topo->prox;
+        free(lixo);
+        p->tam--;
+        return valor;
     } else {
-        f->fim = (f->fim + 1) % TAMANHO_MAX_FILA;
-    }
-    f->dados[f->fim] = val;
-}
-
-int fila_desenfileirar(Fila *f) {
-    if (fila_vazia(f)) {
-        printf("Fila vazia\n");
+        printf("Pilha vazia! \n :(");
         return -1;
     }
-    int val = f->dados[f->inicio];
-    if (f->inicio == f->fim) {
-        f->inicio = f->fim = -1;
-    } else {
-        f->inicio = (f->inicio + 1) % TAMANHO_MAX_FILA;
-    }
-    return val;
+    return 0;
 }
 
-int fila_de_filas_vazia(FilaDeFilas *ff) {
-    return fila_vazia(&ff->fila1) && fila_vazia(&ff->fila2);
+PILHA * inicia(){
+    PILHA * aux = malloc(sizeof(PILHA));
+    aux->topo = NULL;
+    aux->tam = 0;
+    return aux;
 }
 
-void fila_de_filas_enfileirar(FilaDeFilas *ff, int val) {
-    fila_enfileirar(&ff->fila1, val);
-}
+int main(){
+    PILHA *p1 = inicia();
+    add_pilha(18, p1);
+    add_pilha(19, p1);
 
-int fila_de_filas_desenfileirar(FilaDeFilas *ff) {
-    if (fila_de_filas_vazia(ff)) {
-        printf("Fila de filas vazia\n");
-        return -1;
-    }
-    if (!fila_vazia(&ff->fila1)) {
-        while (!fila_vazia(&ff->fila1)) {
-            int val = fila_desenfileirar(&ff->fila1);
-            fila_enfileirar(&ff->fila2, val);
-        }
-    }
-    int val = fila_desenfileirar(&ff->fila2);
-    while (!fila_vazia(&ff->fila2)) {
-        int val = fila_desenfileirar(&ff->fila2);
-        fila_enfileirar(&ff->fila1, val);
-    }
-    return val;
+    PILHA *p2 = inicia();
+    add_pilha(17, p2);
+    add_pilha(28, p2);
+    add_pilha(39, p2);
+    add_pilha(45, p2);
+
+    FILA *f1 = malloc(sizeof(FILA));
+    f1->inicio = NULL;
+    f1->fim = NULL;
+    f1->tam = 0;
+
+    add_fila(p1, f1);
+    add_fila(p2, f1);
+
+    imprimir_fila(f1);
+
+    return 0;
 }
