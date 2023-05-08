@@ -1,87 +1,88 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct no{
-    //valores
-    int valor;
-    //mecanismo de ligacao de nos
-    struct no * prox;
-}NO;
+#define TAM_MAX 100
 
-typedef struct pilha{
-    //valores
-    NO * topo; //topo
-    int tam;
-}PILHA;
+struct pilha {
+    int itens[TAM_MAX];
+    int topo;
+};
 
-void add_pilha(int valor, PILHA *p){
-    NO * novo = malloc(sizeof(NO));
-    novo->valor = valor;
-    novo->prox = NULL;
-
-    if(p->topo == NULL){//pilha esta vazia
-        p->topo = novo;
-    }else {  //topo
-        novo->prox = p->topo;
-        p->topo = novo;
-    }
-    p->tam++;
+void inicializar(struct pilha *p) {
+    p->topo = -1;
 }
 
-int remover_pilha(int chave, PILHA *p){
-    PILHA *p_aux = malloc(sizeof(PILHA)); //pilha auxiliar
-    p_aux->topo = NULL;
-    p_aux->tam = 0;
+int esta_vazia(struct pilha *p) {
+    return p->topo == -1;
+}
 
-    NO * aux = p->topo;
-    while(aux != NULL){
-        if(aux->valor != chave){ //se a chave for diferente, empilhamos o item na pilha auxiliar
-            add_pilha(aux->valor, p_aux);
+int esta_cheia(struct pilha *p) {
+    return p->topo == TAM_MAX - 1;
+}
+
+void empilhar(struct pilha *p, int item) {
+    if (esta_cheia(p)) {
+        printf("Erro: pilha cheia\n");
+        exit(EXIT_FAILURE);
+    }
+    p->itens[++p->topo] = item;
+}
+
+int desempilhar(struct pilha *p) {
+    if (esta_vazia(p)) {
+        printf("Erro: pilha vazia\n");
+        exit(EXIT_FAILURE);
+    }
+    return p->itens[p->topo--];
+}
+
+void remover_item(struct pilha *p, int c) {
+    struct pilha pilha_temporaria;
+    inicializar(&pilha_temporaria);
+
+    while (!esta_vazia(p)) {
+        int item = desempilhar(p);
+        if (item != c) {
+            empilhar(&pilha_temporaria, item);
         }
-        aux = aux->prox;
     }
 
-    p->topo = p_aux->topo;
-    p->tam = p_aux->tam;
-
-    //liberando memória da pilha auxiliar
-    aux = p_aux->topo;
-    while(aux != NULL){
-        NO *lixo = aux;
-        aux = aux->prox;
-        free(lixo);
-    }
-    free(p_aux);
-
-    if(p->tam > 0){ //se a pilha não estiver vazia, retorna o valor removido
-        return chave;
-    }else{
-        printf("Pilha vazia! \n :(");
-        return -1;
+    while (!esta_vazia(&pilha_temporaria)) {
+        int item = desempilhar(&pilha_temporaria);
+        empilhar(p, item);
     }
 }
 
-void imprimir_pilha(PILHA *p){
-    NO * aux = p->topo;
-    for(int i = 0; i < p->tam; i++){
-        printf("valor: %d\n", aux->valor);
-        aux = aux->prox;
+int main() {
+    struct pilha p;
+    inicializar(&p);
+
+    empilhar(&p, 1);
+    empilhar(&p, 2);
+    empilhar(&p, 3);
+    empilhar(&p, 4);
+    empilhar(&p, 5);
+
+    printf("Pilha original:\n");
+    while (!esta_vazia(&p)) {
+        printf("%d\n", desempilhar(&p));
     }
-}
 
-int main(){
-    PILHA *p = malloc(sizeof(PILHA));
-    p->topo = NULL;
-    p->tam = 0;
+    empilhar(&p, 1);
+    empilhar(&p, 2);
+    empilhar(&p, 3);
+    empilhar(&p, 4);
+    empilhar(&p, 5);
 
-    add_pilha(10, p);
-    add_pilha(20, p);
-    add_pilha(30, p);
-    add_pilha(40, p);
-    add_pilha(50, p);
+    int c;
+    printf("Digite a chave do item a ser removido: ");
+    scanf("%d", &c);
+    remover_item(&p, c);
 
-    imprimir_pilha(p);
-    remover_pilha(30, p);
-    imprimir_pilha(p);
+    printf("Pilha resultante:\n");
+    while (!esta_vazia(&p)) {
+        printf("%d\n", desempilhar(&p));
+    }
+
     return 0;
 }
